@@ -18,72 +18,63 @@ import jxl.write.WriteException;
  * @author Ravindra
  */
 public class SaveToExcel {
-    
-     WritableWorkbook wbook;
-     WritableSheet shSheet;
-     int sheetno = 0;
-     
-     public SaveToExcel(String filenamewithpath) throws Exception{
-         
-         if(filenamewithpath.isEmpty()){
+
+    WritableWorkbook wbook;
+    WritableSheet shSheet;
+    int sheetno = 0;
+
+    public SaveToExcel(String filenamewithpath) throws Exception {
+
+        if (filenamewithpath.isEmpty()) {
             System.out.println("[Error] : Missing file name");
             throw new Exception("[Error] : Missing file name");
-            
-         }
-         else{
-             wbook = Workbook.createWorkbook(new File(filenamewithpath));
-         }
-         
-     }
-     
-        public void saveSheet(String sheetname,String header, List data) throws Exception{
-         
-         if(sheetname.isEmpty() || header.isEmpty()){
-        
+
+        } else {
+            wbook = Workbook.createWorkbook(new File(filenamewithpath));
+        }
+
+    }
+
+    public void saveSheet(String sheetname, String header, List data) throws Exception {
+
+        if (sheetname.isEmpty() || header.isEmpty()) {
+
             System.out.println("[Error] : Missing Source or Target Information");
             throw new Exception("[Error] : Missing Source or Target Information");
-            
-         }
-         else{
-            
+
+        } else {
+
             /*if(data.isEmpty()){
                 System.out.println("[Error] : Empty Data Exception");
                 throw new Exception("[Error] : Empty Data Exception");    
             } 
             else{*/
-              
-                shSheet = wbook.createSheet(sheetname, sheetno++);
-                String[] colNames = header.split(",");
-                
-                for (int m = 0; m < data.size(); m++) {
+            shSheet = wbook.createSheet(sheetname, sheetno++);
+            String[] colNames = header.split(",");
+            for (int l = 0; l < colNames.length; l++) {
+                jxl.write.Label labTemp = new jxl.write.Label(l, 0, colNames[l]);
+                shSheet.addCell(labTemp);
 
-                    for (int l = 0; l < colNames.length; l++) {
-                       jxl.write.Label labTemp = new jxl.write.Label(l, 0, colNames[l]);
-                       shSheet.addCell(labTemp);
+            }
+            for (int m = 0; m < data.size(); m++) {
 
-                    }
-                    
-                    List inddata = (List)data.get(m);
+                List inddata = (List) data.get(m);
 
-                    for (int l = 0; l < inddata.size(); l++) {
-                        String celldata = (String)inddata.get(l);
-                        jxl.write.Label labTemp = new jxl.write.Label(l, m + 1, celldata);
-                        shSheet.addCell(labTemp);
+                for (int l = 0; l < inddata.size(); l++) {
+                    String celldata = (String) inddata.get(l);
+                    jxl.write.Label labTemp = new jxl.write.Label(l, m + 1, celldata);
+                    shSheet.addCell(labTemp);
 
-                    }
-                    
-                    
                 }
-           // }
-         }
-     }
-     
+
+            }
+            // }
+        }
+    }
+
     public void writeClose() throws IOException, WriteException {
         wbook.write();
         wbook.close();
     }
-     
+
 }
-     
-     
-    
