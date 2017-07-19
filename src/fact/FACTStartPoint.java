@@ -67,9 +67,13 @@ public class FACTStartPoint implements Job {
 
                 } else {
                     System.err.println("New File Not found");
+                    Properties outSourceProp = new Properties();
+                    outSourceProp.setProperty("status", "No new File found to Compare");
+                    outSourceProp.save(new FileOutputStream(statusFile), new Date().toString());
+                    sendExecptionEmail(feedConnProperties.getMailfailto(), feedConnProperties.getMailfailcc(), "No New File Found to compare", "Hi, \n No updated file found for date: " + currentModTimeStamp);
                 }
             } else {
-                System.out.println("Not Checked");
+                System.out.println("Creating the Prop File");
                 String remotePath = feedConnProperties.getRemotePath();
                 String localPath = feedConnProperties.getLocalFilePath() + remotePath.substring(remotePath.lastIndexOf("/"), remotePath.lastIndexOf(".")) + "_" + fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()) + remotePath.substring(remotePath.lastIndexOf("."), remotePath.length());
                 if (fTPEngine.getFile(remotePath, localPath)) {
@@ -87,7 +91,7 @@ public class FACTStartPoint implements Job {
 
         } catch (Exception ex) {
             Logger.getLogger(FACTStartPoint.class.getName()).log(Level.SEVERE, null, ex);
-            sendExecptionEmail(feedConnProperties.getMailpassto() + "," + feedConnProperties.getMailfailto(), feedConnProperties.getMailpasscc() + "," + feedConnProperties.getMailfailcc(), "Comparision Failed with Execption", "Hi, \n" + ex.toString());
+            sendExecptionEmail(feedConnProperties.getMailfailto(), feedConnProperties.getMailfailcc(), "Comparision Failed with Execption", "Hi, \n" + ex.toString());
         }
 
     }
@@ -137,7 +141,7 @@ public class FACTStartPoint implements Job {
         connProperties.setProperty("trgCount", basics.get(1).toString());
         connProperties.setProperty("srcDiffCount", basics.get(2).toString());
         connProperties.setProperty("trgDiffCount", basics.get(3).toString());
-        connProperties.setProperty("status", "Feed Process Finished");
+        connProperties.setProperty("status", "Comparision Process Finished");
         connProperties.save(new FileOutputStream(saveFile), new Date().toString());
     }
 

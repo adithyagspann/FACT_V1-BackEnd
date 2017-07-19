@@ -3,6 +3,11 @@ package wrapper;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Properties;
 import java.util.Set;
 
@@ -51,6 +56,11 @@ public class FeedConnProperties {
 
         propFile.close();
 
+        if (!Files.exists(Paths.get(statusFilePath), LinkOption.NOFOLLOW_LINKS)) {
+            Files.createDirectory(Paths.get(statusFilePath));
+
+        }
+
     }
 
     public String getDateFormat() {
@@ -60,7 +70,6 @@ public class FeedConnProperties {
     public String getTimeFormat() {
         return timeFormat;
     }
-    
 
     public String getStatusFilePath() {
         return statusFilePath;
