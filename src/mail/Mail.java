@@ -33,9 +33,9 @@ public class Mail {
     private MailProperty mailProperty;
     private Session session;
 
-    public Mail() throws IOException {
-        mailProperty = new MailProperty();
-        System.out.println("Username: "+mailProperty.getFromMail());
+    public Mail(String mailPath) throws IOException {
+        mailProperty = new MailProperty(mailPath);
+        System.out.println("Username: " + mailProperty.getFromMail());
     }
 
     public void createSession() {
@@ -57,9 +57,8 @@ public class Mail {
         msg.addHeader("Content-Transfer-Encoding", "8bit");
 
         msg.setFrom(new InternetAddress(mailProperty.getFromMail(), "NoReply-ID"));
-       
-//        msg.setReplyTo(InternetAddress.parse("gspann151@gmail.com", false));
 
+//        msg.setReplyTo(InternetAddress.parse("gspann151@gmail.com", false));
         msg.setSubject(subject, "UTF-8");
 
         msg.setSentDate(new Date());
@@ -96,16 +95,15 @@ public class Mail {
         System.out.println("EMail Sent Successfully with attachment!!");
 
     }
-    
-    public void sendExecptionEmail(String toMail, String ccMail, String subject, String body) throws MessagingException, UnsupportedEncodingException
-    {
-          MimeMessage msg = new MimeMessage(session);
+
+    public void sendExecptionEmail(String toMail, String ccMail, String subject, String body) throws MessagingException, UnsupportedEncodingException {
+        MimeMessage msg = new MimeMessage(session);
         msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
         msg.addHeader("format", "flowed");
         msg.addHeader("Content-Transfer-Encoding", "8bit");
 
         msg.setFrom(new InternetAddress(mailProperty.getFromMail(), "NoReply-ID"));
-       
+
         msg.setSubject(subject, "UTF-8");
 
         msg.setSentDate(new Date());
@@ -118,17 +116,16 @@ public class Mail {
 
         // Fill the message
         messageBodyPart.setText(body);
-     
+
         // Send message
         Transport.send(msg);
         System.out.println("EMail Sent Successfully with attachment!!");
     }
 
-    public static void main(String args[]) throws IOException, MessagingException
-    {
-        Mail m = new Mail();
-        m.createSession();
-        System.out.println("");
-        m.sendEmail("adithya.pathipaka@gmail.com", "adithyapathipaka@gmail.com", "Test", "Test", "");
+    public static void main(String args[]) throws IOException, MessagingException {
+//        Mail m = new Mail();
+//        m.createSession();
+//        System.out.println("");
+//        m.sendEmail("adithya.pathipaka@gmail.com", "adithyapathipaka@gmail.com", "Test", "Test", "");
     }
 }

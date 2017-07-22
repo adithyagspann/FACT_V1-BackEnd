@@ -1,5 +1,6 @@
 package wrapper;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,17 +18,20 @@ import java.util.Set;
  */
 public class FeedConnProperties {
 
-    private String feedname, hostname, username, password, fileType, fileSrcExtension, fileTrgExtension, srcSep, trgSep, remotePath, remoteModTime, filePath, trgFileheader, srcFileheader, startDate, cronTime, attachlog, mailpassto, mailpasscc, passreptofail, mailfailto, mailfailcc, statusFilePath;
+    private String feedname, hostname, username, password, fileType, fileSrcExtension, fileTrgExtension, srcSep, trgSep, remotePath, remoteModTime, filePath, trgFileheader, srcFileheader, startDate, cronTime, attachlog, mailpassto, mailpasscc, passreptofail, mailfailto, mailfailcc, statusFilePath, mailConfiguration;
+
     private Properties loadConn;
     private FileInputStream propFile;
     private final String dateFormat;
     private final String timeFormat;
+    private File connectionFile;
 
     public FeedConnProperties() throws FileNotFoundException, IOException, IOException {
         loadConn = new Properties();
-        propFile = new FileInputStream("conn.properties");
+        connectionFile = new File("conn.properties");
+        propFile = new FileInputStream(connectionFile);
         loadConn.load(propFile);
-
+        System.out.println("File: " + connectionFile.getAbsolutePath());
         feedname = loadConn.getProperty("feedname");
         hostname = loadConn.getProperty("hostname");
         username = loadConn.getProperty("username");
@@ -53,6 +57,7 @@ public class FeedConnProperties {
         statusFilePath = loadConn.getProperty("statusFilePath");
         dateFormat = loadConn.getProperty("dateFormat");
         timeFormat = loadConn.getProperty("timeFormat");
+        mailConfiguration = loadConn.getProperty("mailConfiguration");
 
         propFile.close();
 
@@ -61,6 +66,10 @@ public class FeedConnProperties {
 
         }
 
+    }
+
+    public String getMailConfiguration() {
+        return mailConfiguration;
     }
 
     public String getDateFormat() {
@@ -163,6 +172,14 @@ public class FeedConnProperties {
 
     public String getMailfailcc() {
         return mailfailcc;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public String getConnectionFile() {
+        return connectionFile.getAbsolutePath();
     }
 
 }

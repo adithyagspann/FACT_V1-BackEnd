@@ -20,9 +20,9 @@ public class MailProperty {
     private Properties mailProperties,connectionProperties;
     
 
-    public MailProperty() throws FileNotFoundException, IOException {
+    public MailProperty(String mailPath) throws FileNotFoundException, IOException {
         mailProperties = new Properties();
-        FileInputStream fis = new FileInputStream("mailConfig.properties");
+        FileInputStream fis = new FileInputStream(mailPath);
         mailProperties.load(fis);
         fromMail = mailProperties.getProperty("fromEmail");
         password = mailProperties.getProperty("password");
@@ -37,7 +37,6 @@ public class MailProperty {
         connectionProperties.put("mail.smtp.host", host);
         connectionProperties.put("mail.smtp.socketFactory.class", socketFactory_class);
         connectionProperties.put("mail.smtp.auth", mail_smtp_auth);
-
     }
 
     public String getFromMail() {
