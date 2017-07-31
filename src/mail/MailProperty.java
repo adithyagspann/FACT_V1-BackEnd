@@ -37,6 +37,7 @@ public class MailProperty {
         connectionProperties.put("mail.smtp.host", host);
         connectionProperties.put("mail.smtp.socketFactory.class", socketFactory_class);
         connectionProperties.put("mail.smtp.auth", mail_smtp_auth);
+         connectionProperties.setProperty("mail.smtp.starttls.enable", "true");
     }
 
     public String getFromMail() {

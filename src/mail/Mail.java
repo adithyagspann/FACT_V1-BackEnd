@@ -45,7 +45,7 @@ public class Mail {
                 return new PasswordAuthentication(mailProperty.getFromMail(), mailProperty.getPassword());
             }
         };
-
+//        System.out.println("Properties: " + mailProperty.getMailProperties());
         session = Session.getDefaultInstance(mailProperty.getMailProperties(), auth);
 
     }
@@ -63,16 +63,14 @@ public class Mail {
 
         msg.setSentDate(new Date());
 
-        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toMail, false));
-        msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
-
-        // Create the message body part
-        BodyPart messageBodyPart = new MimeBodyPart();
-
-        // Fill the message
-        messageBodyPart.setText(body);
-
+//        msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
         if (!attachMentFile.isEmpty() || !attachMentFile.equals("")) {
+            // Create the message body part
+            BodyPart messageBodyPart = new MimeBodyPart();
+
+            // Fill the message
+            messageBodyPart.setText(body);
+
             // Create a multipart message for attachment
             Multipart multipart = new MimeMultipart();
 
@@ -89,14 +87,21 @@ public class Mail {
 
             // Send the complete message parts
             msg.setContent(multipart);
+        } else {
+            msg.setText(body);
+
         }
-        // Send message
+        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toMail, false));
+        msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
+
+// Send message
         Transport.send(msg);
         System.out.println("EMail Sent Successfully with attachment!!");
 
     }
 
     public void sendExecptionEmail(String toMail, String ccMail, String subject, String body) throws MessagingException, UnsupportedEncodingException {
+        System.out.println("Exception email Processing");
         MimeMessage msg = new MimeMessage(session);
         msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
         msg.addHeader("format", "flowed");
@@ -112,20 +117,20 @@ public class Mail {
         msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
 
         // Create the message body part
-        BodyPart messageBodyPart = new MimeBodyPart();
-
         // Fill the message
-        messageBodyPart.setText(body);
+        msg.setText(body);
 
         // Send message
         Transport.send(msg);
-        System.out.println("EMail Sent Successfully with attachment!!");
+        System.out.println("Exception EMail Sent Successfully with attachment!!");
     }
 
     public static void main(String args[]) throws IOException, MessagingException {
-//        Mail m = new Mail();
-//        m.createSession();
-//        System.out.println("");
-//        m.sendEmail("adithya.pathipaka@gmail.com", "adithyapathipaka@gmail.com", "Test", "Test", "");
+        Mail m = new Mail("C:/Users/Admin/Documents/NetBeansProjects/FACT_V1/mailConfig.properties");
+        m.createSession();
+        System.out.println("");
+        m.sendEmail("adithya.pathipaka@gspann.com", "adithyapathipaka@gmail.com", "Test", "Test Normal", "");
+        m.sendExecptionEmail("adithya.pathipaka@gspann.com", "adithyapathipaka@gmail.com", "Test", "Test Execption");
+
     }
 }

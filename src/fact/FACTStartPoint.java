@@ -47,7 +47,7 @@ public class FACTStartPoint implements Job {
             File statusFile = new File(feedConnProperties.getStatusFilePath() + "/" + feedConnProperties.getFeedname() + "_status.properties");
             System.out.println("File Name: " + statusFile.getName());
             if (statusFile.exists()) {
-//                System.out.println("Checked");
+
                 Properties outSource = new Properties();
                 outSource.load(new FileInputStream(statusFile));
                 Date storeModTimeStamp = new SimpleDateFormat("yyyyMMddHHmmss").parse(outSource.getProperty("newModTime"));
@@ -57,11 +57,9 @@ public class FACTStartPoint implements Job {
                 System.out.println("New: " + fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()) + " : " + currentModTimeStamp);
                 //CSVThreadModeler
                 if (currentModTimeStamp.after(storeModTimeStamp)) {
-//                    System.out.println("Checked 1");
                     String remotePath = feedConnProperties.getRemotePath();
                     String localPath = feedConnProperties.getLocalFilePath() + remotePath.substring(remotePath.lastIndexOf("/"), remotePath.lastIndexOf(".")) + "_" + fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()) + remotePath.substring(remotePath.lastIndexOf("."), remotePath.length());
                     if (fTPEngine.getFile(remotePath, localPath)) {
-//                        System.out.println("Checked 2");
                         callModeler(localPath, fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()));
 
                     }
@@ -78,11 +76,16 @@ public class FACTStartPoint implements Job {
                     outSourceProp.setProperty("oldModTime", oldModTime);
                     outSourceProp.setProperty("originalnewFile", localPath);
                     outSourceProp.setProperty("originaloldFile", remotePath);
-                    outSourceProp.setProperty("status", "No new File found to Compare");
+                    String diffFile = outSourceProp.getProperty("diffFile");
+                    if (diffFile == null || diffFile.isEmpty()) {
+                        outSourceProp.setProperty("status", "Intial File Fetched. Still new file not arrived");
+                    } else {
+                        outSourceProp.setProperty("status", "No new File found to Compare");
+                    }
                     outSourceProp.setProperty("connFile", feedConnProperties.getConnectionFile());
                     outSourceProp.setProperty("mailConfig", feedConnProperties.getMailConfiguration());
                     outSourceProp.store(new FileOutputStream(statusFile), new Date().toString());
-                    sendExecptionEmail(feedConnProperties.getMailfailto(), feedConnProperties.getMailfailcc(), "No New File Found to compare", "Hi, \n No updated file found for date: " + currentModTimeStamp);
+                    sendExecptionEmail(feedConnProperties.getMailfailto(), feedConnProperties.getMailfailcc(), "No New File Found to compare on " + new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss a").format(currentModTimeStamp), "Hi, \n No updated file found for date: " + new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss a").format(currentModTimeStamp));
                 }
             } else {
                 System.out.println("Creating the Prop File");
@@ -167,12 +170,14 @@ public class FACTStartPoint implements Job {
     }
 
     public void sendExecptionEmail(String toMail, String ccMail, String subject, String body) {
+        System.out.println("Execption Email Triggered");
         try {
             Mail mail = new Mail(feedConnProperties.getMailConfiguration());
             mail.createSession();
             mail.sendExecptionEmail(toMail, ccMail, subject, body);
         } catch (IOException | MessagingException ex) {
             Logger.getLogger(FACTStartPoint.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println(ex);
         }
     }
 
@@ -202,11 +207,11 @@ public class FACTStartPoint implements Job {
         StringBuffer body = new StringBuffer();
 
         body.append("Hi,\n");
-        body.append("Please find the comparision counts for feed " + feedName + "\n");
-        body.append("Source Count: " + basics.get(0) + "\n");
-        body.append("Target Count: " + basics.get(1) + "\n");
-        body.append("Source UnMatched Count: " + basics.get(2) + "\n");
-        body.append("Target UnMatched Count: " + basics.get(3) + "\n");
+        body.append("Please find the comparision counts for feed " + feedName + "</br>");
+        body.append("Source Count: " + basics.get(0) + "</br>");
+        body.append("Target Count: " + basics.get(1) + "</br>");
+        body.append("Source UnMatched Count: " + basics.get(2) + "</br>");
+        body.append("Target UnMatched Count: " + basics.get(3) + "</br>");
 
         return body.toString();
 
