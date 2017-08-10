@@ -8,6 +8,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ftp.FTP;
@@ -28,6 +31,9 @@ public class FTPEngine {
     public boolean getFile(String remotePathWithFilename, String localPathWithFilename) throws FileNotFoundException, IOException {
 
         File localfile = new File(localPathWithFilename);
+        if (!localfile.getAbsoluteFile().exists()) {
+            Files.createDirectory(Paths.get(localfile.getParent()));
+        }
         InputStream fis = ftpClient.retrieveFileStream(remotePathWithFilename);
         FileOutputStream fos = new FileOutputStream(localfile);
         System.out.println("Processing the Data");
@@ -41,7 +47,7 @@ public class FTPEngine {
         fos.close();
         boolean status = ftpClient.completePendingCommand();
         System.out.println("Println: " + status);
-        
+
         return status;
 
     }
