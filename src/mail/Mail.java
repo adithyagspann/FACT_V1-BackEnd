@@ -51,20 +51,23 @@ public class Mail {
     }
 
     public void sendEmail(String toMail, String ccMail, String subject, String body, String attachMentFile) throws MessagingException, UnsupportedEncodingException {
+        System.out.println("Email Sending");
         MimeMessage msg = new MimeMessage(session);
+        System.out.println("Basic Mail info done");
         msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
         msg.addHeader("format", "flowed");
         msg.addHeader("Content-Transfer-Encoding", "8bit");
-
+        
         msg.setFrom(new InternetAddress(mailProperty.getFromMail(), "NoReply-ID"));
-
+        
 //        msg.setReplyTo(InternetAddress.parse("gspann151@gmail.com", false));
         msg.setSubject(subject, "UTF-8");
 
         msg.setSentDate(new Date());
 
 //        msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
-        if (!attachMentFile.isEmpty() || !attachMentFile.equals("")) {
+        if (!attachMentFile.isEmpty() && !attachMentFile.equals("")) {
+            System.out.println("File attachment in progess");
             // Create the message body part
             BodyPart messageBodyPart = new MimeBodyPart();
 
@@ -88,9 +91,11 @@ public class Mail {
             // Send the complete message parts
             msg.setContent(multipart);
         } else {
+            System.out.println("Mail with body is processing");
             msg.setText(body);
 
         }
+        System.out.println("To Mail: "+toMail);
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toMail, false));
         msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccMail, false));
 
@@ -129,7 +134,7 @@ public class Mail {
         Mail m = new Mail("C:/Users/Admin/Documents/NetBeansProjects/FACT_V1/mailConfig.properties");
         m.createSession();
         System.out.println("");
-        m.sendEmail("adithya.pathipaka@gspann.com", "adithyapathipaka@gmail.com", "Test", "Test Normal", "");
+        m.sendEmail("adithya.pathipaka@gspann.com, adithya_pathipaka@hotmail.com", "adithyapathipaka@gmail.com", "Test", "Test Normal", "");
         m.sendExecptionEmail("adithya.pathipaka@gspann.com", "adithyapathipaka@gmail.com", "Test", "Test Execption");
 
     }

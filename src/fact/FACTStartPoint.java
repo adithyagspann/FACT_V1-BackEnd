@@ -60,6 +60,7 @@ public class FACTStartPoint implements Job {
                     String remotePath = feedConnProperties.getRemotePath();
                     String localPath = feedConnProperties.getLocalFilePath() + remotePath.substring(remotePath.lastIndexOf("/"), remotePath.lastIndexOf(".")) + "_" + fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()) + remotePath.substring(remotePath.lastIndexOf("."), remotePath.length());
                     if (fTPEngine.getFile(remotePath, localPath)) {
+                        System.out.println("Processing the FTP file");
                         callModeler(localPath, fTPEngine.getRemoteModTimeStamp(feedConnProperties.getRemotePath()));
 
                     }
@@ -125,36 +126,34 @@ public class FACTStartPoint implements Job {
             outSourceProp = new Properties();
             outSourceProp.load(new FileInputStream(outSourceFile));
             String oldModTime = outSourceProp.getProperty("newModTime");
-            outSourceProp.setProperty("oldModTime", oldModTime);
-            outSourceProp.setProperty("newModTime", currentModTime);
-            outSourceProp.setProperty("originalnewFile", newLocalPath);
-            outSourceProp.setProperty("originaloldFile", feedConnProperties.getLocalFilePath() + newLocalPath.substring(newLocalPath.lastIndexOf("/"), newLocalPath.lastIndexOf("_")) + "_" + oldModTime + newLocalPath.substring(newLocalPath.lastIndexOf("."), newLocalPath.length()));
-            outSourceProp.setProperty("diffFile", newLocalPath.split(".csv")[0] + "_Results.xls");//Check Where to Store the File
-            outSourceProp.setProperty("status", "FTP File Download Success");
-            outSourceProp.setProperty("connFile", feedConnProperties.getConnectionFile());
-            outSourceProp.setProperty("mailConfig", feedConnProperties.getMailConfiguration());
-            outSourceProp.save(new FileOutputStream(outSourceFile), new Date().toString());
+//
+//            outSourceProp.save(new FileOutputStream(outSourceFile), new Date().toString());
             System.out.println("New File: " + outSourceProp.getProperty("originalnewFile"));
             System.out.println("Old File: " + outSourceProp.getProperty("originaloldFile"));
+            outSourceProp.setProperty("oldModTime", oldModTime);
+            outSourceProp.setProperty("newModTime", currentModTime);
+            String srcName = newLocalPath.substring(newLocalPath.lastIndexOf("/") + 1, newLocalPath.lastIndexOf("."));
+//            System.out.println("SRC: " + srcName);
+//            System.out.println("Old File: " + outSourceProp.getProperty("originalnewFile").substring(outSourceProp.getProperty("originalnewFile").lastIndexOf("/") + 1,outSourceProp.getProperty("originalnewFile").length()));
+            String trgName = outSourceProp.getProperty("originalnewFile").substring(outSourceProp.getProperty("originalnewFile").lastIndexOf("/") + 1, outSourceProp.getProperty("originalnewFile").lastIndexOf("."));
+
+            System.out.println("TRG: " + trgName);
+
+            String srcqry = "select * from " + srcName;
+            String trgqry = "select * from " + trgName;
+
+            CSVThreadModeler csvtm = new CSVThreadModeler(newLocalPath, outSourceProp.getProperty("originaloldFile"), feedConnProperties.getSrcFileheader(), feedConnProperties.getTrgFileheader(), feedConnProperties.getSrcSep(), feedConnProperties.getTrgSep(), feedConnProperties.getFileSrcExtension(), feedConnProperties.getFileTrgExtension(), newLocalPath.split(".csv")[0] + "_Results.xls");
+            List basics = csvtm.writeDiff(srcqry, trgqry, srcName, trgName);
+
+            System.out.println("Basic Info :" + basics);
+            setBasicstoStatus(outSourceProp, outSourceFile, basics, newLocalPath, outSourceProp.getProperty("newModTime"), currentModTime);
+
+            sendEmail(basics, outSourceProp.getProperty("diffFile"));
         }
-
-        String srcName = newLocalPath.substring(newLocalPath.lastIndexOf("/") + 1, newLocalPath.lastIndexOf("."));
-        String trgName = outSourceProp.getProperty("originaloldFile").substring(outSourceProp.getProperty("originaloldFile").lastIndexOf("/") + 1, outSourceProp.getProperty("originaloldFile").lastIndexOf("."));
-
-        String srcqry = "select * from " + srcName;
-        String trgqry = "select * from " + trgName;
-
-        CSVThreadModeler csvtm = new CSVThreadModeler(newLocalPath, outSourceProp.getProperty("originaloldFile"), feedConnProperties.getSrcFileheader(), feedConnProperties.getTrgFileheader(), feedConnProperties.getSrcSep(), feedConnProperties.getTrgSep(), feedConnProperties.getFileSrcExtension(), feedConnProperties.getFileTrgExtension(), outSourceProp.getProperty("diffFile"));
-        List basics = csvtm.writeDiff(srcqry, trgqry, srcName, trgName);
-
-        System.out.println("Basic Info :" + basics);
-        setBasicstoStatus(outSourceProp, outSourceFile, basics);
-
-        sendEmail(basics, outSourceProp.getProperty("diffFile"));
 
     }
 
-    public void setBasicstoStatus(Properties connProperties, File saveFile, List basics) throws IOException {
+    public void setBasicstoStatus(Properties connProperties, File saveFile, List basics, String newLocalPath, String oldModTime, String currentModTime) throws IOException {
         connProperties.setProperty("newCount", basics.get(0).toString());
         connProperties.setProperty("oldCount", basics.get(1).toString());
         connProperties.setProperty("newDiffCount", basics.get(2).toString());
@@ -164,6 +163,14 @@ public class FACTStartPoint implements Job {
         } else {
             connProperties.setProperty("status", "Old and New file has same records");
         }
+        connProperties.setProperty("diffFile", newLocalPath.split(".csv")[0] + "_Results.xls");//Check Where to Store the File
+        connProperties.setProperty("connFile", feedConnProperties.getConnectionFile());
+        connProperties.setProperty("mailConfig", feedConnProperties.getMailConfiguration());
+
+        connProperties.setProperty("originalnewFile", newLocalPath);
+        connProperties.setProperty("originaloldFile", feedConnProperties.getLocalFilePath() + newLocalPath.substring(newLocalPath.lastIndexOf("/"), newLocalPath.lastIndexOf("_")) + "_" + oldModTime + newLocalPath.substring(newLocalPath.lastIndexOf("."), newLocalPath.length()));
+//            outSourceProp.setProperty("diffFile", newLocalPath.split(".csv")[0] + "_Results.xls");//Check Where to Store the File
+        connProperties.setProperty("status", "FTP File Download Success");
         connProperties.setProperty("connFile", feedConnProperties.getConnectionFile());
         connProperties.setProperty("mailConfig", feedConnProperties.getMailConfiguration());
         connProperties.save(new FileOutputStream(saveFile), new Date().toString());
@@ -207,11 +214,11 @@ public class FACTStartPoint implements Job {
         StringBuffer body = new StringBuffer();
 
         body.append("Hi,\n");
-        body.append("Please find the comparision counts for feed " + feedName + "</br>");
-        body.append("Source Count: " + basics.get(0) + "</br>");
-        body.append("Target Count: " + basics.get(1) + "</br>");
-        body.append("Source UnMatched Count: " + basics.get(2) + "</br>");
-        body.append("Target UnMatched Count: " + basics.get(3) + "</br>");
+        body.append("Please find the comparision counts for feed " + feedName + "\n");
+        body.append("Source Count: " + basics.get(0) + "\n");
+        body.append("Target Count: " + basics.get(1) + "\n");
+        body.append("Source UnMatched Count: " + basics.get(2) + "\n");
+        body.append("Target UnMatched Count: " + basics.get(3) + "\n");
 
         return body.toString();
 

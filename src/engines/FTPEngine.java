@@ -28,26 +28,46 @@ public class FTPEngine {
         ftpClient.login(username, password);
     }
 
+//    public boolean getFile(String remotePathWithFilename, String localPathWithFilename) throws FileNotFoundException, IOException {
+//        System.out.println("Processing the Data");
+//        File localfile = new File(localPathWithFilename);
+//
+//        if (!localfile.getParentFile().exists()) {
+//
+//            Files.createDirectory(Paths.get(localfile.getParent()));
+//        }
+//        InputStream fis = ftpClient.retrieveFileStream(remotePathWithFilename);
+//        FileOutputStream fos = new FileOutputStream(localfile);
+//
+//        byte[] bytesArray = new byte[5120];
+//        int bytesRead = -1;
+//        while ((bytesRead = fis.read(bytesArray)) != -1) {
+//            fos.write(bytesArray, 0, bytesRead);
+//        }
+//        
+//
+//        fis.close();
+//        fos.close();
+//        boolean status = ftpClient.completePendingCommand();
+////        System.out.println("Println: " + status);
+//
+//        return status;
+//
+//    }
     public boolean getFile(String remotePathWithFilename, String localPathWithFilename) throws FileNotFoundException, IOException {
-
+        System.out.println("Processing the Data");
         File localfile = new File(localPathWithFilename);
-        if (!localfile.getAbsoluteFile().exists()) {
+
+        if (!localfile.getParentFile().exists()) {
+
             Files.createDirectory(Paths.get(localfile.getParent()));
         }
-        InputStream fis = ftpClient.retrieveFileStream(remotePathWithFilename);
-        FileOutputStream fos = new FileOutputStream(localfile);
-        System.out.println("Processing the Data");
-        byte[] bytesArray = new byte[5120];
-        int bytesRead = -1;
-        while ((bytesRead = fis.read(bytesArray)) != -1) {
-            fos.write(bytesArray, 0, bytesRead);
-        }
 
-        fis.close();
-        fos.close();
-        boolean status = ftpClient.completePendingCommand();
-        System.out.println("Println: " + status);
+        boolean status = false;
 
+        status = ftpClient.retrieveFile(remotePathWithFilename, new FileOutputStream(localPathWithFilename));
+        
+        System.out.println("Download Process Done");
         return status;
 
     }

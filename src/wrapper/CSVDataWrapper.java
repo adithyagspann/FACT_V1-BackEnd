@@ -6,7 +6,7 @@
 package wrapper;
 
 import engines.CSVSQLEngine;
-import engines.ComparisonEngine;
+import engines.ComparsionEngine;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

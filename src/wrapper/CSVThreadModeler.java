@@ -1,6 +1,6 @@
 package wrapper;
 
-import engines.ComparisonEngine;
+import engines.ComparsionEngine;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,58 +8,58 @@ import java.util.List;
 public class CSVThreadModeler {
 
     CSVDataWrapper csvwarpsrc, csvwarptrg;
-    ComparisonEngine ce;
+    ComparsionEngine ce;
     SaveToExcel ste;
     String srcheader;
     String trgheader;
+    private String srcfilenamewithpath;
+    private String storeFileName;
 
-    public CSVThreadModeler(String srcfilenamewithpath, String trgfilenamewithpath,String srcheader, String trgheader,  String srcseparator, String trgseparator, String srcfileextension, String trgfileextension,String storeFileName) throws Exception {
+    public CSVThreadModeler(String srcfilenamewithpath, String trgfilenamewithpath, String srcheader, String trgheader, String srcseparator, String trgseparator, String srcfileextension, String trgfileextension, String storeFileName) throws Exception {
 
         //check the param
         if (srcheader.isEmpty() || trgheader.isEmpty() || srcfilenamewithpath.isEmpty() || trgfilenamewithpath.isEmpty() || srcseparator.isEmpty() || trgseparator.isEmpty() || srcfileextension.isEmpty() || trgfileextension.isEmpty()) {
-            
+
             System.out.println("[Error] : Missing Source or Target Information");
             throw new Exception("[Error] : Missing Source or Target Information");
-            
-        }
-        else{
-            
+
+        } else {
+
             this.srcheader = srcheader;
             this.trgheader = trgheader;
-           
+
             //src
             csvwarpsrc = new CSVDataWrapper();
             csvwarpsrc.setHeaderLine(srcheader);
             csvwarpsrc.SetConnection(srcfilenamewithpath);
             csvwarpsrc.setSeparator(srcseparator);
             csvwarpsrc.fileExtension(srcfileextension);
-            
+
             //trg
             csvwarptrg = new CSVDataWrapper();
             csvwarptrg.setHeaderLine(trgheader);
             csvwarptrg.SetConnection(trgfilenamewithpath);
             csvwarptrg.setSeparator(trgseparator);
             csvwarptrg.fileExtension(trgfileextension);
-            
+
             //Comparsion
-            ce = new ComparisonEngine();
-            
-            //save file
-            System.out.println(srcfilenamewithpath);
-            ste = new SaveToExcel(storeFileName);
+            ce = new ComparsionEngine();
+            this.srcfilenamewithpath = srcfilenamewithpath;
+            this.storeFileName = storeFileName;
 
         }
 
     }
-    
-    public List writeDiff(String srcqry,String trgqry,String srcsheetname,String trgsheetname) throws SQLException, Exception{
-        
-         List basics =  new ArrayList();
-        
+
+    public List writeDiff(String srcqry, String trgqry, String srcsheetname, String trgsheetname) throws SQLException, Exception {
+
+        List basics = new ArrayList();
+
         //get data
         List srcdata = csvwarpsrc.getData(srcqry);
         List trgdata = csvwarptrg.getData(trgqry);
 
+        System.out.println("Processing the differences");
         //comparison
         List srcdiff = ce.getUnSrcData(srcdata, trgdata);
         List trgdiff = ce.getUnTrgData(srcdata, trgdata);
@@ -69,11 +69,14 @@ public class CSVThreadModeler {
         basics.add(trgdata.size());
         basics.add(srcdiff.size());
         basics.add(trgdiff.size());
-        
+        System.out.println("Differences and Count Prepared");
+        //save file
+        ste = new SaveToExcel(this.storeFileName);
         //writing to file
         ste.saveSheet(srcsheetname, srcheader, srcdiff);
         ste.saveSheet(trgsheetname, trgheader, trgdiff);
         ste.writeClose();
+        System.out.println("Differences Excel Prepared");
         return basics;
     }
     /*
@@ -98,5 +101,5 @@ public class CSVThreadModeler {
         System.out.println("Basic Info :"+basics);
         
     }
-    */
+     */
 }
